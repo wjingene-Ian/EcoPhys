@@ -1,0 +1,34 @@
+{
+  "dataset_id": "hs300_long100",
+  "source_pool": "Existing fixed 288-stock hs300 research cohort; not current index membership",
+  "candidate_count": 288,
+  "successful_candidates": 287,
+  "selected_count": 100,
+  "selection_rule": "Verified listing date floor; recent last date within 14 calendar days; fewer than 500 consecutive unchanged prices; earliest available adjusted-price start first; ties by valid-row count descending, then ticker",
+  "requested_end_inclusive": "2026-11-09",
+  "individual_earliest_start": "1991-01-29",
+  "individual_latest_start": "2002-02-05",
+  "individual_valid_rows_min": 6083,
+  "individual_valid_rows_max": 8958,
+  "common_price_start": "2002-02-05",
+  "common_price_end": "2026-11-09",
+  "common_price_rows": 6083,
+  "common_return_rows": 6082,
+  "common_price_calendar_years": 24.758893064197075,
+  "no_forward_fill": true,
+  "prices": "Yahoo split/dividend adjusted close; no repair or cross-provider splice",
+  "max_weekend_rows_per_stock": 0,
+  "selected_pre_listing_rows_removed": 84,
+  "selected_max_consecutive_zero_returns": 364,
+  "downloaded_utc": "2026-11-10T07:06:58.993133+00:00",
+  "unfiltered_100th_start": "2002-01-11",
+  "all_candidate_pre_listing_rows_removed": 16918,
+  "all_candidate_histories_with_pre_listing_rows": 12,
+  "excluded_long_frozen_series": [
+    {
+      "ticker": "000776.SZ",
+      "unchanged_return_days": 814
+    }
+  ],
+  "basic_pipeline_validation": "complete"
+}

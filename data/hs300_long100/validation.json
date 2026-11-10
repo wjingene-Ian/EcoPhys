@@ -1,0 +1,7 @@
+{
+  "verified_price_files": 100,
+  "no_pre_listing_prices": true,
+  "raw_response_hashes_match": true,
+  "old_new_return_correlation_min": 0.9999999999338738,
+  "old_new_return_correlation_median": 0.9999999999907504
+}

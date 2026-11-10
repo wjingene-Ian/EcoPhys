@@ -39,6 +39,7 @@ cd "/Users/wangxujing/Documents/courses/经济物理学/task/project3"
 | 简称 | 中文名 | 文件数 | 命令 |
 |---|---|---:|---|
 | hs300 | 沪深300固定股票池 | 288 | `/opt/anaconda3/envs/ml/bin/python run.py hs300` |
+| hs300_long100 | 沪深固定股票池长历史样本（2002–2026共同区间） | 100 | `/opt/anaconda3/envs/ml/bin/python run.py hs300_long100` |
 | asx200 | 澳大利亚标普／澳证200指数 | 157 | `/opt/anaconda3/envs/ml/bin/python run.py asx200` |
 | cac40 | 法国CAC40指数 | 38 | `/opt/anaconda3/envs/ml/bin/python run.py cac40` |
 | dax40 | 德国DAX40指数 | 37 | `/opt/anaconda3/envs/ml/bin/python run.py dax40` |
@@ -49,7 +50,7 @@ cd "/Users/wangxujing/Documents/courses/经济物理学/task/project3"
 | nikkei225 | 日本日经225指数 | 219 | `/opt/anaconda3/envs/ml/bin/python run.py nikkei225` |
 | sp500 | 美国标普500指数 | 473 | `/opt/anaconda3/envs/ml/bin/python run.py sp500` |
 
-一次运行上述全部十组数据的基础分析：
+一次运行全部已登记数据的基础分析（当前11组）：
 
 ```bash
 /opt/anaconda3/envs/ml/bin/python run.py all
@@ -61,14 +62,14 @@ cd "/Users/wangxujing/Documents/courses/经济物理学/task/project3"
 
 | `--analysis` | 计算内容 | 适用数据 |
 |---|---|---|
-| basic | 完整谱、原始/RMT截尾两策略最小方差回测、压力日期比较 | 全部十组 |
-| audit | 逐股数据检查、异常收益、市场代理、相关性演化、年度/月度统计；沪深另核对三组档案 | 全部十组 |
-| rmt | 市场/组/剩余分解、参与率、股票数/窗口/市场阶段敏感性、四策略回测、历史事件比较、配对块bootstrap | 全部十组 |
-| structure | 厚尾、绝对收益ACF、前后期模式匹配、独立日期打乱；有标签时再算全部模式行业关联及BH校正 | 全部十组；行业和真实指数部分仅沪深 |
+| basic | 完整谱、原始/RMT截尾两策略最小方差回测、压力日期比较 | 全部已登记数据 |
+| audit | 逐股数据检查、异常收益、市场代理、相关性演化、年度/月度统计；沪深另核对三组档案 | 全部已登记数据 |
+| rmt | 市场/组/剩余分解、参与率、股票数/窗口/市场阶段敏感性、四策略回测、历史事件比较、配对块bootstrap | 全部已登记数据 |
+| structure | 厚尾、绝对收益ACF、前后期模式匹配、独立日期打乱；有标签时再算全部模式行业关联及BH校正 | 全部已登记数据；行业和真实指数部分仅沪深 |
 | industry | 行业/二级行业聚类、富集与置换检验、行业关联树 | 仅沪深有标签；其他市场明确跳过 |
-| scales | 日收益及5/21/63日重叠、非重叠、局部去均值、轮廓DMA，共13个矩阵及同处理随机参照 | 全部十组 |
-| modes | τ=1–250、KL时间分量和功率谱、前十模态、去市场协方差、500/750日滚动稳定性、八组留出验证和六种协方差风险预测 | 全部十组；股票数不足44/144时省略对应固定排名模态 |
-| all | 顺次执行以上全部模块 | 全部十组；缺失行业数据的步骤明确记录跳过 |
+| scales | 日收益及5/21/63日重叠、非重叠、局部去均值、轮廓DMA，共13个矩阵及同处理随机参照 | 全部已登记数据 |
+| modes | τ=1–250、KL时间分量和功率谱、前十模态、去市场协方差、500/750日滚动稳定性、八组留出验证和六种协方差风险预测 | 全部已登记数据；股票数不足44/144时省略对应固定排名模态 |
+| all | 顺次执行以上全部模块 | 全部已登记数据；缺失行业数据的步骤明确记录跳过 |
 
 例如，运行沪深全部模块：
 
@@ -194,3 +195,19 @@ python3 verify_data.py
 - `validation_report.json`保存上述核对结果。`full_quick`与`sample100_quick`中的随机检验仅用于流程验证；尚未给十个市场都执行正式次数的全部高级分析。
 
 测试生成的运行记录保留实际执行时的路径和代码哈希；复制或移动项目后重新运行会记录新路径，数据哈希可用于核对是否仍为同一批输入。
+
+## 新增长历史100股：hs300_long100
+
+从原有288股研究股票池挑选，非最新沪深300动态成分。每股保留经上市日期核对后的完整可用日频复权价格，最早单股记录为1991-01-29；100股共同区间为2002-02-05至2026-11-09，6083个价格日、6082个收益日，约24.8年。已排除未完成的当日日线与一只超过500日连续零收益的候选。
+
+```bash
+/opt/anaconda3/envs/ml/bin/python run.py hs300_long100
+```
+
+详细数据、100股名单和来源证据在`data/hs300_long100/`，下载代码为`download_long_history.py`。重新抓取并保存到另一个新目录：
+
+```bash
+/opt/anaconda3/envs/ml/bin/python download_long_history.py --end 2026-11-09 --dataset-id hs300_long100_refresh
+```
+
+原始响应和上市日期核对记录均已保存。报价采用Yahoo复权收盘，上市日期来自东方财富f189字段；没有跨数据源拼接价格。存在固定股票池、历史可得性和事后质量筛选偏差。

@@ -48,5 +48,13 @@
     "name_zh": "美国标普500指数",
     "prices": "data/sp500/prices",
     "files": 473
+  },
+  "hs300_long100": {
+    "name_zh": "沪深固定股票池长历史100股",
+    "prices": "data/hs300_long100/prices",
+    "files": 100,
+    "source_pool": "hs300",
+    "common_start": "2002-02-05",
+    "common_end": "2026-11-09"
   }
 }
