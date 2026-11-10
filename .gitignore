@@ -1,0 +1,14 @@
+# Generated analyses and local runtime files
+/outputs/
+/.cache/
+__pycache__/
+*.py[cod]
+.DS_Store
+.venv/
+venv/
+*.log
+
+# Local credentials and machine-specific configuration
+.env
+.env.*
+!.env.example

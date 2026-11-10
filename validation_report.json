@@ -1,0 +1,86 @@
+{
+  "basic_datasets": {
+    "hs300": {
+      "assets": 288,
+      "max_metric_abs_difference_from_original": 0.0,
+      "pngs": 3
+    },
+    "asx200": {
+      "assets": 157,
+      "max_metric_abs_difference_from_original": 0.0,
+      "pngs": 3
+    },
+    "cac40": {
+      "assets": 38,
+      "max_metric_abs_difference_from_original": 0.0,
+      "pngs": 3
+    },
+    "dax40": {
+      "assets": 37,
+      "max_metric_abs_difference_from_original": 0.0,
+      "pngs": 3
+    },
+    "ftse100": {
+      "assets": 93,
+      "max_metric_abs_difference_from_original": 0.0,
+      "pngs": 3
+    },
+    "kospi200": {
+      "assets": 154,
+      "max_metric_abs_difference_from_original": 0.0,
+      "pngs": 3
+    },
+    "nasdaq100": {
+      "assets": 84,
+      "max_metric_abs_difference_from_original": 0.0,
+      "pngs": 3
+    },
+    "nifty50": {
+      "assets": 47,
+      "max_metric_abs_difference_from_original": 0.0,
+      "pngs": 3
+    },
+    "nikkei225": {
+      "assets": 219,
+      "max_metric_abs_difference_from_original": 0.0,
+      "pngs": 3
+    },
+    "sp500": {
+      "assets": 473,
+      "max_metric_abs_difference_from_original": 0.0,
+      "pngs": 3
+    }
+  },
+  "advanced_preview": {
+    "hs300": {
+      "basic": "complete",
+      "audit": "complete",
+      "rmt": "complete",
+      "structure": "complete",
+      "industry": "complete",
+      "scales": "complete",
+      "modes": "complete"
+    },
+    "cac40": {
+      "basic": "complete",
+      "audit": "complete",
+      "rmt": "complete",
+      "structure": "complete",
+      "industry": "skipped",
+      "scales": "complete",
+      "modes": "complete"
+    },
+    "sp500": {
+      "modes": "complete",
+      "assets": 473
+    }
+  },
+  "checks": {
+    "legacy100_max_metric_abs_difference": 0.0003524472427606229,
+    "four_strategy_weights_feasible": true,
+    "hs300_full_spectrum_17_above_MP": true,
+    "all_13_scale_matrices_symmetric_unit_diagonal_psd": true,
+    "top10_time_modes_unit_variance": true,
+    "generated_figures_png_only": true
+  }
+}

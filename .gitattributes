@@ -1,0 +1,8 @@
+* text=auto
+*.py text eol=lf
+*.md text eol=lf
+*.pkl binary
+*.npz binary
+# Preserve the exact bytes covered by data_manifest.json across platforms.
+data/** -text
+reference_results/** -text

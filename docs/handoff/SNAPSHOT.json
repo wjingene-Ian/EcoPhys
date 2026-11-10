@@ -1,0 +1,26 @@
+{
+  "client_date": "2026-11-10",
+  "packaged_at_utc": "2026-11-10T02:17:03.810062+00:00",
+  "latest_pptx": "Project3/Analysis_codex/revision_output/经济物理_Project3_修订版.pptx",
+  "slides": 48,
+  "speaker_notes": 48,
+  "current_pptx_sha256": "c2bed5cfc53f4f63cc94c80d57467e3fdbfa2ccaa7f135fa803a8b7c79ec4592",
+  "previous_generated_sha256": "04add0f5dd0c145a8c7df69b5edb42ddeda3282b0faa37ae860e6fb42a95dc68",
+  "matches_previous_generated_validation": false,
+  "version_notice": "Current disk PPTX is authoritative; rebuilding may discard edits made after code generation.",
+  "raw_pickle_count": 864,
+  "source_code": "Copied byte-for-byte. Absolute runtime paths in presentation JS need local adaptation.",
+  "optional_reference_attachments": [
+    "course_project_requirements.png",
+    "course_assessment_rubric.png"
+  ],
+  "excluded": [
+    "virtual environments",
+    "node_modules",
+    "Python caches",
+    "temporary PowerPoint locks",
+    "draft PPTX files",
+    "slide render caches",
+    "build logs"
+  ]
+}

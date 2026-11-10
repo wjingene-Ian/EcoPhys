@@ -1,0 +1,52 @@
+{
+  "hs300": {
+    "name_zh": "沪深300固定股票池",
+    "prices": "data/hs300/prices",
+    "files": 288
+  },
+  "asx200": {
+    "name_zh": "澳大利亚标普／澳证200指数",
+    "prices": "data/asx200/prices",
+    "files": 157
+  },
+  "cac40": {
+    "name_zh": "法国CAC40指数",
+    "prices": "data/cac40/prices",
+    "files": 38
+  },
+  "dax40": {
+    "name_zh": "德国DAX40指数",
+    "prices": "data/dax40/prices",
+    "files": 37
+  },
+  "ftse100": {
+    "name_zh": "英国富时100指数",
+    "prices": "data/ftse100/prices",
+    "files": 93
+  },
+  "kospi200": {
+    "name_zh": "韩国KOSPI200指数",
+    "prices": "data/kospi200/prices",
+    "files": 154
+  },
+  "nasdaq100": {
+    "name_zh": "美国纳斯达克100指数",
+    "prices": "data/nasdaq100/prices",
+    "files": 84
+  },
+  "nifty50": {
+    "name_zh": "印度NIFTY50指数",
+    "prices": "data/nifty50/prices",
+    "files": 47
+  },
+  "nikkei225": {
+    "name_zh": "日本日经225指数",
+    "prices": "data/nikkei225/prices",
+    "files": 219
+  },
+  "sp500": {
+    "name_zh": "美国标普500指数",
+    "prices": "data/sp500/prices",
+    "files": 473
+  }
+}

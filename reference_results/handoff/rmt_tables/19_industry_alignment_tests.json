@@ -1,0 +1,12 @@
+{
+  "purity": 0.6666666666666666,
+  "adjusted_rand_index": 0.6069591683905827,
+  "normalized_mutual_information": 0.7713699441208957,
+  "selected_cluster_count": 20,
+  "selected_silhouette": 0.372079457811835,
+  "l1_within_minus_between": 0.7187126721732024,
+  "l1_permutation_p_one_sided": 0.0004997501249375312,
+  "l2_same_minus_same_l1_different_l2": 0.2940625655180784,
+  "l2_permutation_p_one_sided": 0.0004997501249375312,
+  "permutations": 2000
+}

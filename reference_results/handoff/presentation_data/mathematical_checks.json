@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "checks": [
+    "unit diagonal",
+    "trace",
+    "PSD",
+    "orthonormal basis",
+    "component additivity",
+    "clipped PSD",
+    "feasible weights",
+    "training precedes holding",
+    "initial-wealth drawdown"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "market_pc_equalweight_correlation": 0.9983172001391976,
+  "market_positive_loading_fraction": 1.0,
+  "null_lambda_max_mean": 1.4898051542427486,
+  "null_lambda_max_max": 1.518591045093378,
+  "bootstrap_sharpe_delta": 0.07845608006040916,
+  "bootstrap_sharpe_delta_ci95": [
+    -0.027725202258056306,
+    0.19235008735763545
+  ],
+  "cleaned_asset_count": 86,
+  "note": "clean filtering uses full sample, diagnostic only"
+}

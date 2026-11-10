@@ -1,0 +1,11 @@
+date,ticker,simple_return,log_return,absolute_return,review_reason
+2019-06-12,600518.SS,-0.5391566306433766,-0.7746970565018376,0.5391566306433766,"absolute daily return exceeds 25%; verify suspension, corporate action, or source adjustment"
+2019-05-10,600518.SS,-0.39433965288950346,-0.5014359333583237,0.39433965288950346,"absolute daily return exceeds 25%; verify suspension, corporate action, or source adjustment"
+2019-03-06,601212.SS,0.33333328891129227,0.2876820391352496,0.33333328891129227,"absolute daily return exceeds 25%; verify suspension, corporate action, or source adjustment"
+2019-02-27,601066.SS,0.3313070687165107,0.28616121807621414,0.3313070687165107,"absolute daily return exceeds 25%; verify suspension, corporate action, or source adjustment"
+2019-02-26,600816.SS,0.3306055543021129,0.2856341426008044,0.3306055543021129,"absolute daily return exceeds 25%; verify suspension, corporate action, or source adjustment"
+2019-01-08,601901.SS,0.2641509093863357,0.23440067893549746,0.2641509093863357,"absolute daily return exceeds 25%; verify suspension, corporate action, or source adjustment"
+2019-05-07,600516.SS,-0.26254837945125076,-0.3045547921758207,0.26254837945125076,"absolute daily return exceeds 25%; verify suspension, corporate action, or source adjustment"
+2019-01-18,600157.SS,0.25988710416741867,0.2310221170819507,0.25988710416741867,"absolute daily return exceeds 25%; verify suspension, corporate action, or source adjustment"
+2019-03-26,600352.SS,0.25218891166448776,0.22489314920640363,0.25218891166448776,"absolute daily return exceeds 25%; verify suspension, corporate action, or source adjustment"
+2019-02-20,600816.SS,0.25000002684893885,0.2231435727933606,0.25000002684893885,"absolute daily return exceeds 25%; verify suspension, corporate action, or source adjustment"
