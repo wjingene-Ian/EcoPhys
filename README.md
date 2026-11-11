@@ -211,3 +211,41 @@ python3 verify_data.py
 ```
 
 原始响应和上市日期核对记录均已保存。报价采用Yahoo复权收盘，上市日期来自东方财富f189字段；没有跨数据源拼接价格。存在固定股票池、历史可得性和事后质量筛选偏差。
+## 长历史100股的完整结果与报告
+
+```bash
+python run.py hs300_long100 --analysis all
+python report_long_history.py hs300_long100
+```
+
+第一条运行七个正式分析模块，τ=1–250；第二条生成完整中文报告、离线PNG图表目录、全历史逐年比较、较大τ的前十个时间分量、全部100个日频时间分量/载荷、完整矩阵、每τ100次独立循环平移对照、数值校验和完整结果压缩包。
+
+- 主结果：`outputs/hs300_long100/full/完整分析报告.md`
+- 图表和数据目录：`outputs/hs300_long100/full/index.html`（浏览器打开）
+- 全部结果：`outputs/hs300_long100/hs300_long100_all_results.zip`
+- 文件哈希清单：`outputs/hs300_long100/full/artifact_manifest.csv`
+
+**交易日历核验：**原始下载价格中有81个共同日期，100股成交量全部为0且调整收盘价全部不变。分析入口利用同目录下的 `daily_details/*.csv.gz` 联合核验后排除这些日期，保存 `excluded_nontrading_dates.csv`，不改动原始价格。单只股票停牌不会因此被排除；缺少成交量证据时不猜测市场休市日。最终共同价格日6002、收益日6001，价格区间仍是2002-02-05至2026-11-09。原始文件统计的6083个价格记录包含上述供应商日期。
+
+报告脚本要求七模块正式运行完成，不能把 `--quick` 预览打包成正式结果。全部PNG、CSV、NPZ、日志、参数和实现快照都包含在结果压缩包；原始数据已在仓库 `data/`，不重复打包。`outputs/` 仍为生成目录，不自动上传Git。
+
+
+## 机器学习投资组合与RMT比较
+
+本次使用 `hs300_long100` 的100股、6001个日收益。统一评价区间为2010-01-29至2026-11-09，保留过去约六年用于训练与时间验证；所有特征和PCA使用当时可得信息。20种方法包括树模型、RNN/LSTM/GRU、TCN、分块Transformer、GNN、直接权重学习、HRP与KL风险预测。
+
+```bash
+python3 -m venv .cache/ml_venv
+.cache/ml_venv/bin/python -m pip install -r requirements_ml_lock.txt
+.cache/ml_venv/bin/python run_ml.py
+```
+
+- 中文报告：`outputs/hs300_long100/ml_portfolios/机器学习组合完整报告.md`
+- 全部PNG与数据：`outputs/hs300_long100/ml_portfolios/index.html`
+- 逐日净值：`outputs/hs300_long100/ml_portfolios/normalized_equity.csv`
+- 完整压缩包：`outputs/hs300_long100/hs300_long100_ml_results.zip`
+- 检查点、每年度参数和成熟标签截止日保存在各模型目录。随机方法运行三个种子，主曲线使用平均目标权重。
+
+已完成的相同版本模型会复用；只更新报告运行 `run_ml.py --report-only`。可用 `--models gru,lstm` 运行指定方法，`--prepare-only` 只准备特征。改动训练代码或参数时使用新 `--output`，保留旧结果。
+
+主实验留出完整一个交易日再成交，并重新计算同口径RMT基线；原RMT日收益也从相同起点重绘。另保存额外执行延迟、交易费用、随机种子及区块重采样比较。股票池固定、历史区间已被查看，结果属于探索性研究。

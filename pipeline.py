@@ -466,8 +466,44 @@ def modes(panel, output, args, source):
             'common_date_shuffle': 'preserves cross-stock same-day dependence; tests ordering effects'}
 
 
+def remove_verified_nontrading_rows(panel, prices):
+    """Exclude vendor holiday carry-forwards only with full-universe volume evidence.
+
+    Price files stay immutable. A flat individual stock is never sufficient:
+    every aligned stock must have zero volume and unchanged adjusted price.
+    Missing OHLC/volume evidence leaves the original calendar untouched.
+    """
+    details = prices.parent / 'daily_details'
+    columns = ['Date', 'assets', 'zero_volume_assets', 'unchanged_price_assets', 'reason']
+    if not details.is_dir():
+        return panel, pd.DataFrame(columns=columns)
+    volumes = []
+    for ticker in panel.columns:
+        path = details / f'{ticker}.csv.gz'
+        if not path.is_file():
+            raise ValueError(f'成交量日历审计缺少文件：{path}')
+        frame = pd.read_csv(path, usecols=['Date', 'volume'], index_col='Date', parse_dates=True)
+        if frame.index.has_duplicates:
+            raise ValueError(f'成交量日期重复：{path}')
+        volumes.append(frame.volume.reindex(panel.index).rename(ticker))
+    volume = pd.concat(volumes, axis=1)
+    if volume.isna().any().any() or not np.isfinite(volume.to_numpy()).all():
+        raise ValueError('成交量未完整覆盖共同价格日，不能验证交易日历。')
+    flat = np.log(panel).diff().abs().le(1e-14)
+    zero = volume.eq(0)
+    remove = flat.all(axis=1) & zero.all(axis=1)
+    excluded = pd.DataFrame({'Date': panel.index[remove].strftime('%Y-%m-%d'),
+                             'assets': panel.shape[1],
+                             'zero_volume_assets': zero.loc[remove].sum(axis=1).to_numpy(),
+                             'unchanged_price_assets': flat.loc[remove].sum(axis=1).to_numpy(),
+                             'reason': 'all stocks: zero vendor volume and unchanged adjusted close'})
+    return panel.loc[~remove], excluded.reindex(columns=columns)
+
+
 def run_dataset(dataset, spec, prices, args, root):
     panel, manifest = cm.load_panel(prices)
+    source_price_dates = len(panel)
+    panel, excluded_dates = remove_verified_nontrading_rows(panel, prices)
     total_assets = panel.shape[1]
     if args.assets:
         if args.assets > total_assets: raise ValueError(f'请求{args.assets}只，但仅有{total_assets}只股票。')
@@ -485,6 +521,7 @@ def run_dataset(dataset, spec, prices, args, root):
     if args.quick: profile += '_quick'
     output = (args.output.expanduser().resolve() if args.output else root / 'outputs') / dataset / profile
     output.mkdir(parents=True, exist_ok=True)
+    excluded_dates.to_csv(output / 'excluded_nontrading_dates.csv', index=False)
     returns = np.log(panel).diff().iloc[1:]; returns.index.name = 'Date'
     returns.to_csv(output / 'log_returns.csv')
     manifest['included'] = manifest.file.map(lambda f: Path(f).stem in panel.columns)
@@ -497,7 +534,10 @@ def run_dataset(dataset, spec, prices, args, root):
     if manifest_path.exists():
         previous = json.loads(manifest_path.read_text()).get('stages', {})
     record = {'dataset': dataset, 'name_zh': spec['name_zh'], 'source': str(prices), 'source_assets': total_assets,
-              'selected_assets': n, 'price_dates': len(panel), 'price_start': str(panel.index[0].date()),
+              'selected_assets': n, 'price_dates': len(panel), 'source_price_dates': source_price_dates,
+              'excluded_nontrading_dates': len(excluded_dates),
+              'calendar_rule': 'remove only full-universe zero volume AND unchanged price; requires paired daily_details',
+              'price_start': str(panel.index[0].date()),
               'price_end': str(panel.index[-1].date()), 'profile': profile,
               'arguments': vars(args), 'python': sys.version, 'numpy': np.__version__, 'pandas': pd.__version__,
               'started_utc': datetime.now(timezone.utc).isoformat(), 'stages': previous}
