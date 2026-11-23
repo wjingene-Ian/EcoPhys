@@ -1,8 +1,4 @@
-# Project 3：统一数据与命令行分析
-
-两套 Project 和之前 Chen–Ma 扩展已整理到这个目录。实际运行只使用本目录的数据；移动整个 `project3` 文件夹后，仍可用相同的相对路径运行。统一入口是 `run.py`，纯命令行，图只输出 PNG。
-
-默认使用选定数据文件夹内的**全部可用股票**，不会自动抽取100股。这里只包含已有价格快照，没有自动联网下载。
+# 统一数据与命令行分析
 
 ## 最简单的运行方式
 
@@ -97,16 +93,6 @@ cd "/Users/wangxujing/Documents/courses/经济物理学/task/project3"
 
 `--quick`减少置换和重采样次数，并将默认最大τ改为20。它用于流程预览，结果放进独立的 `full_quick/`，不能当成正式实验结论。正式默认：随机对照100次、标签置换999次、组合差异bootstrap2000次、模态bootstrap200次。可用 `--null-reps`、`--permutations`、`--bootstrap-reps` 和 `--tau-max` 显式覆盖。
 
-## 如何复现交接包的旧100股股票池
-
-```bash
-/opt/anaconda3/envs/ml/bin/python run.py hs300 --analysis rmt --assets 100
-/opt/anaconda3/envs/ml/bin/python run.py hs300 --analysis structure --assets 100
-/opt/anaconda3/envs/ml/bin/python run.py hs300 --analysis scales --assets 100
-```
-
-这三个命令显式使用交接包保存的固定100股名单和顺序。结果写入 `outputs/hs300/sample100/`，与默认288股的 `full/` 分开。数值环境和随机实验执行次序可能造成小差异；`reference_results/`保留旧结果供对照。
-
 ## 输出放在哪里
 
 默认结构：
@@ -134,42 +120,112 @@ outputs/hs300/full/
 
 后面仍自动加 `hs300/full/<模块>/`。重复同一命令会更新该模块结果；原有历史结果集中放在 `reference_results/`。
 
-## 两套历史方法的口径
+## 代码架构与目录说明
 
-整合保留两套历史回测规则，以免把已有结果混为同一实验：
+项目由命令行入口、流程调度、研究计算、数据与配置、结果输出五部分组成。以下列出主要文件和目录；`<dataset>` 表示数据集简称，`<profile>` 表示 `full`、`sample100` 或相应的 `_quick` 运行配置。
 
-| 项目 | basic（原分析） | rmt（交接包方法） |
+```text
+project3/
+├── run.py                         # 结构与风险分析的命令行入口
+├── pipeline.py                    # 数据加载、日历核验及七个分析模块的调度
+├── run_ml.py                      # 机器学习组合实验入口
+├── report_long_history.py         # 长历史补充实验与报告生成
+├── download_long_history.py       # 长历史数据下载及来源记录
+├── verify_data.py                 # 按 SHA-256 清单核验仓库数据
+├── datasets.json                  # 数据集名称、路径及股票数量配置
+├── data_manifest.json             # 原始数据文件的 SHA-256 清单
+├── requirements.txt               # 基础分析依赖
+├── requirements_ml.txt            # 机器学习依赖范围
+├── requirements_ml_lock.txt       # 机器学习环境的锁定版本
+├── engines/                       # 谱分解、RMT、组合回测、模态与风险分析
+├── ml_experiment/                 # 机器学习实验实现
+│   ├── __init__.py
+│   ├── data.py                    # 特征、预测标签、时间切分及缓存
+│   ├── models.py                  # 传统机器学习与神经网络模型
+│   ├── run.py                     # 模型训练、目标权重生成与交易模拟
+│   ├── report.py                  # 评价指标、稳健性比较、绘图及报告输出
+│   └── checks.py                  # 信息边界、模型复现、持仓漂移与费用校验
+├── data/                          # 随仓库提供的研究数据
+│   ├── hs300/
+│   │   ├── prices/                # 股票价格快照
+│   │   ├── archived_returns/      # 历史收益率档案
+│   │   └── archived_zscores/      # 历史标准化收益档案
+│   ├── hs300_long100/
+│   │   ├── prices/                # 长历史复权价格
+│   │   ├── daily_details/         # 日线明细，含成交量日历核验证据
+│   │   └── provenance/            # 原始接口响应及上市日期来源记录
+│   ├── metadata/                  # 行业标签及市场指数
+│   └── <其他数据集>/prices/       # 其他市场的股票价格快照
+├── reference_results/             # 整合前结果，供历史对照
+├── docs/                          # 项目说明文档
+├── outputs/                       # 运行生成的结果，不纳入 Git
+│   ├── <dataset>/<profile>/       # 分析结果、输入清单、日志与运行参数
+│   └── hs300_long100/ml_portfolios/
+│                                  # 模型检查点、组合结果与机器学习报告
+└── .cache/                        # 本地环境和绘图库缓存，不纳入 Git
+```
+
+### 模块职责与调用关系
+
+| 层次 | 入口或模块 | 主要职责 |
 |---|---|---|
-| 默认股票数 | 全部 | 全部；原交接包默认100，现须显式`--assets 100` |
-| 协方差估计输入 | 简单日收益 | 对数日收益 |
-| 实际持有收益 | 简单日收益 | 对数收益转换为简单收益 |
-| 策略 | 原始、RMT截尾 | 等权、原始、硬过滤、RMT截尾 |
-| 年化天数 | 252 | 242 |
-| 训练/调仓/权重上限 | 504日/21日/5% | 504日/21日/5% |
-| 初次建仓换手 | 1，扣10bps | 0，不扣首次成本 |
-| 压力分析 | 波动最高10%、滚动收益最低10% | 预选2022、2024和2025事件窗口 |
+| 命令行入口 | `run.py`、`run_ml.py` | 读取命令行参数，启动对应分析或实验。 |
+| 分析调度 | `pipeline.py` | 按配置读取数据、核验交易日历、选择股票池，调用研究引擎并记录模块状态。 |
+| 研究计算 | `engines/` | 实现谱分解、相关结构、多尺度分析、协方差估计及基础组合回测。 |
+| 机器学习实验 | `ml_experiment/` | 构造当时可得特征，按时间训练和验证模型，生成持仓并评价样本外表现。 |
+| 数据与结果核验 | `verify_data.py`、`ml_experiment/checks.py` | 分别检查输入数据完整性，以及机器学习实验的信息边界和交易模拟实现。 |
+| 报告与导出 | `report_long_history.py`、`ml_experiment/report.py` | 生成图表、结果表、中文报告与离线浏览页面。 |
 
-`rmt`在100股及以下默认保留旧SLSQP求解器；超过100股时调用原项目已有的投影梯度求解器，使用同样的权重约束和交接包的岭项。可用`--solver slsqp`或`--solver projected`显式选择。求解器记录在结果摘要中，数值解不保证逐位相同。
+主要流程如下：
 
-其他结构分析默认使用全部入选股票。所有行业标签均是现有快照，不是历史时点行业。中心DMA只用于结构研究，未进入回测；没有HF1MA平滑。普通聚类树不构成Parisi超度量性证明。随机参照分别记录其生成方式，不能混用MP理论上界、独立打乱阈值和保留同期相关的共同日期打乱结果。
+```text
+结构与风险分析：
+  datasets.json + data/<dataset>/
+    → run.py → pipeline.py → engines/
+    → outputs/<dataset>/<profile>/
 
-## 文件组织与来源
+长历史补充报告：
+  outputs/hs300_long100/full/（七个正式分析模块完成后）
+    → report_long_history.py
+    → supplement/、中文报告、离线页面
 
-- `run.py`、`pipeline.py`：当前统一入口和适配代码。
-- `engines/basic/`：之前基础复现的计算函数。
-- `engines/handoff/`：交接包中的分析函数及历史辅助脚本。
-- `engines/chenma/`：之前KL、滚动结构与风险预测代码。
-- `data/<简称>/prices/`：真实复制的价格文件，没有指向旧目录的软链接。
-- `data/hs300/archived_returns/`、`archived_zscores/`：沪深原始收益与标准化档案。
-- `data/metadata/`：沪深行业、指数响应和旧100股名单。
-- `reference_results/`：整合前的数值结果，仅作历史对照，未冒充本次新计算。
-- `docs/handoff/`：封存交接说明，其中提及的旧目录和旧48页PPT属于历史版本。
+机器学习组合实验：
+  长历史 full/ 中的收益矩阵、RMT 基线及风险评价组合清单
+    → run_ml.py → ml_experiment/（特征 → 训练 → 配置与回测 → 评价与校验）
+    → outputs/hs300_long100/ml_portfolios/
+```
 
-只使用统一入口运行当前项目。`engines/`内保留的旧独立入口可能仍描述原项目目录；联网下载、PPT构建等旧辅助脚本不会被统一入口自动调用。
+结构与风险分析使用 `run.py`；长历史补充报告使用 `report_long_history.py`；机器学习实验使用 `run_ml.py`。机器学习实验依赖长历史分析已生成的输入，运行顺序见下文。
 
-## 换一台机器运行
+`data/` 保存输入，`outputs/` 保存本次计算结果，`reference_results/` 保存历史对照。分析入口读取原始价格并将清洗记录另存到结果目录；`download_long_history.py` 是手动触发的独立下载入口，不会随常规分析自动执行。
 
-需要Python 3.11或以上。原始pickle由pandas 3.x写出，因此本项目要求pandas 3.x。在项目目录执行：
+## 运行环境与包依赖
+
+需要 Python 3.11 或以上。价格文件采用 pandas 3.x 的 pickle 格式读取，因此要求 pandas 3.x。基础分析与机器学习实验分别使用独立虚拟环境。
+
+### 依赖包
+
+下表与仓库中的 `requirements.txt`、`requirements_ml.txt` 对应。`—` 表示该环境未直接声明此依赖。
+
+| 包 | 基础分析版本要求 | 机器学习版本要求 | 用途 |
+|---|---|---|---|
+| NumPy | `>=2.0,<2.5` | `>=2.1,<2.5` | 数组运算、收益矩阵与特征值分解。 |
+| pandas | `>=3.0,<3.1` | `>=3.0,<3.1` | 价格读取、日期对齐、滚动统计与结果表。 |
+| SciPy | `>=1.15,<2` | `>=1.15,<1.17` | 约束优化、统计检验与层次聚类。 |
+| Matplotlib | `>=3.9,<4` | `>=3.9,<4` | 特征值谱、净值、回撤等图表。 |
+| seaborn | `>=0.13,<1` | — | 相关矩阵热图等统计图形。 |
+| Pillow | `>=10,<13` | `>=10` | 图片读取、图像导出与结果校验。 |
+| scikit-learn | — | `>=1.6,<1.9` | Ridge、Elastic Net 等传统模型。 |
+| PyTorch（`torch`） | — | `>=2.6,<3` | 循环网络、TCN、Transformer 和图模型。 |
+| LightGBM | — | `>=4.5,<5` | 梯度提升树收益预测。 |
+| XGBoost | — | `>=2,<4` | 梯度提升树收益预测。 |
+| joblib | — | `>=1.3` | 传统模型与预处理参数的保存和加载。 |
+
+`requirements_ml_lock.txt` 另行记录机器学习实验环境的精确版本，包含直接和间接依赖。复现实验时使用该锁定文件；需要重新选择兼容版本时，使用 `requirements_ml.txt` 中的版本范围。两个文件是同一机器学习环境的两种安装方式。
+
+### 基础分析环境
+
+在项目根目录执行：
 
 ```bash
 python3 -m venv .venv
@@ -177,24 +233,26 @@ python3 -m venv .venv
 .venv/bin/python run.py hs300
 ```
 
-复制完成后可核对数据完整性：
+### 机器学习实验环境
+
+安装已保存实验所用的锁定版本：
+
+```bash
+python3 -m venv .cache/ml_venv
+.cache/ml_venv/bin/python -m pip install -r requirements_ml_lock.txt
+```
+
+如需按版本范围安装，将最后一条命令中的文件名替换为 `requirements_ml.txt`。机器学习实验使用长历史分析生成的输入，具体准备步骤见后文“长历史100股的完整结果与报告”和“机器学习投资组合与RMT比较”。
+
+### 数据完整性检查
+
+复制或克隆仓库后，可直接核对数据文件：
 
 ```bash
 python3 verify_data.py
 ```
 
-本地已有环境若出现NumPy/SciPy版本兼容提示，建议使用上述独立环境与依赖范围。项目本身不会修改本机已有环境。
-
-## 本次整合验证
-
-- 十组数据的完整基础分析均已运行，主要回测指标与原项目保存结果一致。
-- 沪深288股与法国38股的所有模块通过低重复次数的流程预览；法国行业步骤因无标签明确跳过。
-- 标普500的473股KL/滚动/风险模块通过流程预览，绘图不再固定为288股。
-- 旧100股组合入口与交接包主要指标最大差约0.000352，属于数值环境复跑差异。
-- 检查了四策略权重约束、13个尺度矩阵的对称性/单位对角线/半正定性、前十时间分量单位方差，以及PNG输出格式。
-- `validation_report.json`保存上述核对结果。`full_quick`与`sample100_quick`中的随机检验仅用于流程验证；尚未给十个市场都执行正式次数的全部高级分析。
-
-测试生成的运行记录保留实际执行时的路径和代码哈希；复制或移动项目后重新运行会记录新路径，数据哈希可用于核对是否仍为同一批输入。
+该检查脚本只使用 Python 标准库。`argparse`、`pathlib`、`hashlib`、`json`、`urllib`、`zipfile` 等也属于标准库，无需单独安装。
 
 ## 新增长历史100股：hs300_long100
 
@@ -218,17 +276,15 @@ python run.py hs300_long100 --analysis all
 python report_long_history.py hs300_long100
 ```
 
-第一条运行七个正式分析模块，τ=1–250；第二条生成完整中文报告、离线PNG图表目录、全历史逐年比较、较大τ的前十个时间分量、全部100个日频时间分量/载荷、完整矩阵、每τ100次独立循环平移对照、数值校验和完整结果压缩包。
+第一条运行七个正式分析模块，τ=1–250；第二条生成完整中文报告、离线PNG图表目录、全历史逐年比较、较大τ的前十个时间分量、全部100个日频时间分量/载荷、完整矩阵、每τ100次独立循环平移对照、数值校验。
 
 - 主结果：`outputs/hs300_long100/full/完整分析报告.md`
 - 图表和数据目录：`outputs/hs300_long100/full/index.html`（浏览器打开）
-- 全部结果：`outputs/hs300_long100/hs300_long100_all_results.zip`
 - 文件哈希清单：`outputs/hs300_long100/full/artifact_manifest.csv`
 
 **交易日历核验：**原始下载价格中有81个共同日期，100股成交量全部为0且调整收盘价全部不变。分析入口利用同目录下的 `daily_details/*.csv.gz` 联合核验后排除这些日期，保存 `excluded_nontrading_dates.csv`，不改动原始价格。单只股票停牌不会因此被排除；缺少成交量证据时不猜测市场休市日。最终共同价格日6002、收益日6001，价格区间仍是2002-02-05至2026-11-09。原始文件统计的6083个价格记录包含上述供应商日期。
 
-报告脚本要求七模块正式运行完成，不能把 `--quick` 预览打包成正式结果。全部PNG、CSV、NPZ、日志、参数和实现快照都包含在结果压缩包；原始数据已在仓库 `data/`，不重复打包。`outputs/` 仍为生成目录，不自动上传Git。
-
+报告脚本要求七个正式分析模块运行完成，不能把 `--quick` 预览作为正式结果。生成的结果保存在 `outputs/`，不会自动上传到 Git。
 
 ## 机器学习投资组合与RMT比较
 
@@ -243,7 +299,6 @@ python3 -m venv .cache/ml_venv
 - 中文报告：`outputs/hs300_long100/ml_portfolios/机器学习组合完整报告.md`
 - 全部PNG与数据：`outputs/hs300_long100/ml_portfolios/index.html`
 - 逐日净值：`outputs/hs300_long100/ml_portfolios/normalized_equity.csv`
-- 完整压缩包：`outputs/hs300_long100/hs300_long100_ml_results.zip`
 - 检查点、每年度参数和成熟标签截止日保存在各模型目录。随机方法运行三个种子，主曲线使用平均目标权重。
 
 已完成的相同版本模型会复用；只更新报告运行 `run_ml.py --report-only`。可用 `--models gru,lstm` 运行指定方法，`--prepare-only` 只准备特征。改动训练代码或参数时使用新 `--output`，保留旧结果。
